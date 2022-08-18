@@ -1,4 +1,8 @@
 const inquirer = require('inquirer');
+const { viewDepartments, addDepartment } = require('./utils/departments');
+const { viewEmployees, addEmployee } = require('./utils/employees');
+const { viewManagers, addManager } = require('./utils/managers');
+const { viewRoles, addRole, updateRole } = require('./utils/roles');
 
 function mainMenu() {
     console.log(`
