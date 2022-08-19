@@ -16,6 +16,11 @@ VALUES
     (7, 'Forklift Driver', 100000.00, 3),
     (8, 'Customer Service Rep', 45000.00, 4);
 
+INSERT INTO manager (first_name, last_name, department_id)
+VALUES
+    ('Michael', 'Scott', NULL),
+    ('Darryl', 'Philbin', 3);
+
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES
     ('Kevin', 'Malone', 2, 1),
@@ -28,8 +33,3 @@ VALUES
     ('Kelly', 'Kapoor', 8, 1),
     ('Roy', 'Anderson', 6, 2),
     ('Nate', 'Nickerson', 7, 2);
-
-INSERT INTO manager (first_name, last_name, department_id)
-VALUES
-    ('Michael', 'Scott', NULL),
-    ('Darryl', 'Philbin', 3);
