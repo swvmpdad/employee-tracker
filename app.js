@@ -118,7 +118,7 @@ function addEmployee() {
                 role_id: roleId,
                 manager_id: managerId
             }
-        );
+        )
         console.log(`
         ============================
         Employee added successfully!
@@ -127,6 +127,75 @@ function addEmployee() {
         mainMenu()
     });
 };
+
+function viewDepartments() {
+    db.query(`
+    SELECT department.id AS ID,
+    department.name AS Name
+    FROM department;
+    `, function(err, res) {
+        if (err) {
+            console.log(err);
+        }
+        console.table(res);
+        mainMenu();
+    })
+};
+
+function addDepartment() {
+    return inquirer
+    .prompt([
+        {
+            type: 'input',
+            name: 'deptName',
+            message: 'What is the name of the department?',
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log('Please enter a valid response.');
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(response => {
+        db.query(
+            "INSERT INTO department SET ?",
+            {
+                name: response.deptName
+            }
+        )
+        console.log(`
+        ==============================
+        Department added successfully!
+        ==============================
+        `);
+        mainMenu()
+    })
+}
+
+function viewManagers() {
+    db.query(`
+    SELECT manager.id AS ID,
+    manager.first_name AS First,
+    manager.last_name AS Last,
+    department.name AS Dept
+    FROM manager
+    LEFT JOIN department
+    ON manager.department_id = department.id;
+    `, function(err, res) {
+        if (err) {
+            console.log(err);
+        }
+        console.table(res);
+        mainMenu();
+    });
+}
+
+function addManager() {
+    
+}
 
 function mainMenu() {
     console.log(`
