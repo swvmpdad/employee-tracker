@@ -24,7 +24,7 @@ function viewEmployees() {
 };
 
 function addEmployee() {
-    return inquirer
+    inquirer
     .prompt([
         {
             type: 'input',
@@ -74,18 +74,20 @@ function addEmployee() {
             "INSERT INTO employee SET ?",
             [{
                 first_name: response.firstName,
-                last_name: response.last_name,
+                last_name: response.lastName,
                 role_id: response.roleId,
                 manager_id: response.managerId
-            }]
+            }], err => {
+                if (err) throw err;
+                console.log(`
+                ============================
+                Employee added successfully!
+                ============================
+                `);
+                mainMenu()
+            }
         )
-        console.log(`
-        ============================
-        Employee added successfully!
-        ============================
-        `);
-        mainMenu()
-    });
+    })
 };
 
 function viewDepartments() {
@@ -122,16 +124,18 @@ function addDepartment() {
     .then(response => {
         db.query(
             "INSERT INTO department SET ?",
-            {
+            [{
                 name: response.deptName
+            }], err => {
+                if (err) throw err;
+                console.log(`
+                ==============================
+                Department added successfully!
+                ==============================
+                `);
+                mainMenu()
             }
         )
-        console.log(`
-        ==============================
-        Department added successfully!
-        ==============================
-        `);
-        mainMenu()
     })
 }
 
@@ -197,14 +201,17 @@ function addManager() {
                 first_name: response.firstName,
                 last_name: response.last_name,
                 department_id: response.department_id
-            }]
+            }], err => {
+                if (err) throw err;
+                console.log(`
+                ============================
+                Manager added successfully!
+                ============================
+                `);
+                mainMenu()
+            }
         )
-        console.log(`
-        ============================
-        Manager added successfully!
-        ============================
-        `);
-        mainMenu()
+        
       })
 }
 
@@ -276,14 +283,16 @@ function addRole() {
                 title: response.title,
                 salary: response.salary,
                 department_id: response.department
-            }]
+            }], err => {
+                if (err) throw err;
+                console.log(`
+                ========================
+                Role added successfully!
+                ========================
+                `);
+                mainMenu();
+            }
         )
-        console.log(`
-        ========================
-        Role added successfully!
-        ========================
-        `);
-        mainMenu();
       });
     });
 }
@@ -326,29 +335,37 @@ function updateRole() {
                                 }
                             }
                         ])
-                })
-                .then(response => {
-                    const roleChoice = response.role;
-
-                    db.query(`UPDATE employee SET ? WHERE first_name = ?`, 
-                        [
-                            {
-                                role_id: roleChoice
-                            }, employeeName
-                        ]
-                )
-                console.log(`
-        ==========================
-        Role updated successfully!
-        ==========================
-        `);
-        mainMenu();
+                        .then(response => {
+                            const roleChoice = response.role;
+        
+                            db.query(`UPDATE employee SET ? WHERE first_name = ?`, 
+                                [
+                                    {
+                                        role_id: roleChoice
+                                    }, employeeName
+                                ], err => {
+                                    if (err) throw err;
+                                    console.log(`
+                                    ==========================
+                                    Role updated successfully!
+                                    ==========================
+                                    `);
+                                    mainMenu();
+                                }
+                        )
+                })  
             })
     })
     })
 }
 
 function mainMenu() {
+    db.connect(function(err) {
+        if (err) {
+            console.log(err);
+        }
+        console.log('Connected to database!');
+    });
     console.log(`
 ██████████████████████████████████████████████████
 █▄─▄▄─█▄─▀█▀─▄█▄─▄▄─█▄─▄███─▄▄─█▄─█─▄█▄─▄▄─█▄─▄▄─█
@@ -421,12 +438,4 @@ function mainMenu() {
     });
 }
 
-db.connect(function(err) {
-    if (err) {
-        console.log(err);
-    }
-    console.log('Connected to database!');
-
-    mainMenu();
-});
-
+mainMenu();
