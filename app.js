@@ -72,12 +72,12 @@ function addEmployee() {
     .then(response => {
         db.query(
             "INSERT INTO employee SET ?",
-            {
+            [{
                 first_name: response.firstName,
                 last_name: response.last_name,
                 role_id: response.roleId,
                 manager_id: response.managerId
-            }
+            }]
         )
         console.log(`
         ============================
@@ -193,11 +193,11 @@ function addManager() {
       .then(response => {
         db.query(
             "INSERT INTO manager SET ?",
-            {
+            [{
                 first_name: response.firstName,
                 last_name: response.last_name,
                 department_id: response.department_id
-            }
+            }]
         )
         console.log(`
         ============================
@@ -226,7 +226,9 @@ function viewRoles() {
 }
 
 function addRole() {
-    return inquirer
+    db.query("SELECT * FROM department", function(err, res) {
+    if (err) throw err;
+    inquirer
     .prompt([
         {
             type: 'input',
@@ -246,7 +248,7 @@ function addRole() {
             name: 'salary',
             message: "What is the role's salary?",
             validate: salaryInput => {
-                if (salaryInput){
+                if (isNaN(salaryInput) === false){
                     return true;
                 } else {
                     console.log('Please enter a valid response.');
@@ -255,42 +257,95 @@ function addRole() {
             }
         },
         {
-            type: 'list',
+            type: 'rawlist',
             name: 'department',
-            message: `What is the role's department?
-                     1. Accounting, 2. Sales, 3. Warehouse, 4. Customer Service`,
-            choices: [1, 2, 3, 4]
+            message: `What is the role's department id?`,
+            choices: function() {
+                var choicesArr = [];
+                for (var i = 0; i < res.length; i++) {
+                    choicesArr.push(res[i].id)
+                }
+                return choicesArr;
+            }
         }
     ])
       .then(response => {
         db.query(
             "INSERT INTO role SET ?",
-            {
+            [{
                 title: response.title,
                 salary: response.salary,
-                department_id: response.department_id
-            }
+                department_id: response.department
+            }]
         )
         console.log(`
         ========================
         Role added successfully!
         ========================
         `);
-        mainMenu()
-      })
+        mainMenu();
+      });
+    });
 }
 
 function updateRole() {
-    let employee;
-    for (var i = 1, )
-    return inquirer
-    .prompt([
-        {
-            type: 'list',
-            name: 'role',
-            message: 'What new role do you want to give the employee?'
-        }
-    ])
+    db.query(`SELECT * FROM employee`, (err,res) => {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    type: 'rawlist',
+                    name: 'employee',
+                    message: 'Which employee would you like to update?',
+                    choices: function() {
+                        let choicesArr = [];
+                        for (var i = 0; i < res.length; i++) {
+                            choicesArr.push(res[i].first_name);
+                        }
+                        return choicesArr;
+                    }
+                }
+            ])
+            .then(response => {
+                const employeeName = response.employee;
+
+                db.query(`SELECT * FROM role`, (err, res) => {
+                    if (err) throw err;
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'rawlist',
+                                name: 'role',
+                                message: `What is the ID of the employee's new role?`,
+                                choices: function() {
+                                    let choicesArr = [];
+                                    for (var i = 0; i < res.length; i++) {
+                                        choicesArr.push(res[i].id);
+                                    }
+                                    return choicesArr;
+                                }
+                            }
+                        ])
+                })
+                .then(response => {
+                    const roleChoice = response.role;
+
+                    db.query(`UPDATE employee SET ? WHERE first_name = ?`, 
+                        [
+                            {
+                                role_id: roleChoice
+                            }, employeeName
+                        ]
+                )
+                console.log(`
+        ==========================
+        Role updated successfully!
+        ==========================
+        `);
+        mainMenu();
+            })
+    })
+    })
 }
 
 function mainMenu() {
@@ -374,6 +429,4 @@ db.connect(function(err) {
 
     mainMenu();
 });
-
-module.exports = mainMenu;
 
