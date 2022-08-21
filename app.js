@@ -55,68 +55,28 @@ function addEmployee() {
         {
             type: 'list',
             name: 'roleId',
-            message: "What is the employee's role?",
-            choices: [
-                '1. Lead Accountant',
-                '2. Accountant',
-                '3. Assistant Sales Director',
-                '4. ATRM',
-                '5. Salesperson',
-                '6. Warehouse Worker',
-                '7. Forklift Operator',
-                '8. Customer Service Rep'
-            ]
+            message: `What is the employee's role?
+            1. Lead Accountant, 2. Accountant, 3. Assistant Sales Director,
+            4. ATRM, 5. Salesperson, 6. Warehouse Worker, 7. Forklift Operator,
+            8. Customer Service Rep`,
+            choices: [1,2,3,4,5,6,7,8]
         },
         {
             type: 'list',
             name: 'managerId',
-            message: "Who is the employee's manager?",
-            choices: [
-                '1. Michael Scott',
-                '2. Darryl Philbin'
-            ]
+            message: `Who is the employee's manager?
+                    1. Micheal Scott, 2. Darryl Philbin`,
+            choices: [1,2]
         }
     ])
     .then(response => {
-        let roleId;
-        let managerId;
-        if (response.roleId === '1. Lead Accountant') {
-            roleId = 1;
-        }
-        if (response.roleId === '2. Accountant') {
-            roleId = 2;
-        }
-        if (response.roleId === '3. Assistant Sales Director') {
-            roleId = 3;
-        }
-        if (response.roleId === '4. ATRM') {
-            roleId = 4;
-        }
-        if (response.roleId === '5. Salesperson') {
-            roleId = 5;
-        }
-        if (response.roleId === '6. Warehouse Worker') {
-            roleId = 6;
-        }
-        if (response.roleId === '7. Forklift Operator') {
-            roleId = 7;
-        }
-        if (response.roleId === '8. Customer Service Rep') {
-            roleId = 8;
-        }
-        if (response.managerId === '1. Michael Scott') {
-            managerId = 1;
-        }
-        if (response.managerId === '2. Darryl Philbin') {
-            managerId = 2;
-        }
         db.query(
             "INSERT INTO employee SET ?",
             {
                 first_name: response.firstName,
                 last_name: response.last_name,
-                role_id: roleId,
-                manager_id: managerId
+                role_id: response.roleId,
+                manager_id: response.managerId
             }
         )
         console.log(`
@@ -194,7 +154,143 @@ function viewManagers() {
 }
 
 function addManager() {
-    
+    return inquirer
+    .prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: "What is the manager's first name?",
+            validate: nameInput => {
+                if (nameInput){
+                    return true;
+                } else {
+                    console.log('Please enter a valid response.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "What is the manager's last name?",
+            validate: nameInput => {
+                if (nameInput){
+                    return true;
+                } else {
+                    console.log('Please enter a valid response.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: `What is the manager's department?
+                     1. Accounting, 2. Sales, 3. Warehouse, 4. Customer Service`,
+            choices: [1, 2, 3, 4]
+        }
+    ])
+      .then(response => {
+        db.query(
+            "INSERT INTO manager SET ?",
+            {
+                first_name: response.firstName,
+                last_name: response.last_name,
+                department_id: response.department_id
+            }
+        )
+        console.log(`
+        ============================
+        Manager added successfully!
+        ============================
+        `);
+        mainMenu()
+      })
+}
+
+function viewRoles() {
+    db.query(`
+    SELECT role.title AS Title,
+    role.salary AS Salary,
+    department.name AS Department
+    FROM role
+    LEFT JOIN department
+    ON role.department_id = department.id;
+    `, function(err, res) {
+        if (err) {
+            console.log(err);
+        }
+        console.table(res);
+        mainMenu();
+    })
+}
+
+function addRole() {
+    return inquirer
+    .prompt([
+        {
+            type: 'input',
+            name: 'title',
+            message: "What is the role's title?",
+            validate: titleInput => {
+                if (titleInput){
+                    return true;
+                } else {
+                    console.log('Please enter a valid response.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'number',
+            name: 'salary',
+            message: "What is the role's salary?",
+            validate: salaryInput => {
+                if (salaryInput){
+                    return true;
+                } else {
+                    console.log('Please enter a valid response.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: `What is the role's department?
+                     1. Accounting, 2. Sales, 3. Warehouse, 4. Customer Service`,
+            choices: [1, 2, 3, 4]
+        }
+    ])
+      .then(response => {
+        db.query(
+            "INSERT INTO role SET ?",
+            {
+                title: response.title,
+                salary: response.salary,
+                department_id: response.department_id
+            }
+        )
+        console.log(`
+        ========================
+        Role added successfully!
+        ========================
+        `);
+        mainMenu()
+      })
+}
+
+function updateRole() {
+    let employee;
+    for (var i = 1, )
+    return inquirer
+    .prompt([
+        {
+            type: 'list',
+            name: 'role',
+            message: 'What new role do you want to give the employee?'
+        }
+    ])
 }
 
 function mainMenu() {
@@ -265,6 +361,7 @@ function mainMenu() {
 ╚██████╔╝╚█████╔╝╚█████╔╝██████╔╝██████╦╝░░░██║░░░███████╗██╗
 ░╚═════╝░░╚════╝░░╚════╝░╚═════╝░╚═════╝░░░░╚═╝░░░╚══════╝╚═╝
             `);
+            process.exit();
         }
     });
 }
