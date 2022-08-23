@@ -766,6 +766,9 @@ function mainMenu() {
         else if (response.menu === 'Add Department') {
             addDepartment();
         }
+        else if (response.menu === 'Add Manager') {
+            addManager();
+        }
         else if (response.menu === 'View Managers') {
             viewManagers();
         }
