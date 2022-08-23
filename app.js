@@ -533,12 +533,12 @@ function updateRole() {
                             {
                                 type: 'rawlist',
                                 name: 'role',
-                                message: `What is the ID of the employee's new role?`,
+                                message: `What is the employee's new role?`,
                                 choices: function() {
                                     let choicesArr = [];
                                     // generates list of roles
                                     for (var i = 0; i < res.length; i++) {
-                                        choicesArr.push(res[i].id);
+                                        choicesArr.push(res[i].title);
                                     }
                                     return choicesArr;
                                 }
@@ -546,12 +546,21 @@ function updateRole() {
                         ])
                         .then(response => {
                             // defines the chosen role
-                            const roleChoice = response.role;
+                            let role;
+                            function getRoleId() {
+                                for (var i = 0; i < res.length; i++) {
+                                    if (res[i].title === response.role) {
+                                        role = res[i].id
+                                        return role;
+                                    }
+                                }
+                            }
+                            getRoleId();
                             // inserts and overrides the current data in the table based off of the employeeName
                             db.query(`UPDATE employee SET ? WHERE first_name = ?`, 
                                 [
                                     {
-                                        role_id: roleChoice
+                                        role_id: role
                                     }, employeeName
                                 ], err => {
                                     if (err) throw err;
