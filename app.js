@@ -26,6 +26,105 @@ function viewEmployees() {
     });
 }
 
+function viewEmployeesByManager() {
+    db.query(`SELECT * FROM manager`, (err, res) => {
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'manager',
+                message: `Which manager's employees would you like to view?`,
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].first_name);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            let managerId;
+            function getManagerId() {
+                for (var i = 0; i < res.length; i++) {
+                    if (res[i].first_name === response.manager) {
+                        managerId = res[i].id;
+                        return managerId;
+                    }
+                }
+            }
+            getManagerId();
+            db.query(`SELECT employee.id AS ID,
+            employee.first_name AS First,
+            employee.last_name AS Last,
+            role.title AS Role,
+            role.salary AS Salary
+            FROM employee
+            LEFT JOIN role
+            ON employee.role_id = role.id
+            WHERE employee.manager_id = ${managerId}`,
+            function(err, res) {
+                if (err) throw err;
+                // displaying the called info to a table
+                console.table(res);
+                // calling main menu function
+                mainMenu();
+            })
+          })
+    })
+}
+
+function viewEmployeesByDepartment() {
+    db.query(`SELECT * FROM department`, (err, res) => {
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: `Which department's employees would you like to view?`,
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].name);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            let departmentId;
+            function getDeptId() {
+                for (var i = 0; i < res.length; i++) {
+                    if (res[i].name === response.department) {
+                        departmentId = res[i].id;
+                        return departmentId;
+                    }
+                }
+            }
+            getDeptId();
+            db.query(`SELECT employee.id AS ID,
+            employee.first_name AS First,
+            employee.last_name AS Last,
+            role.title AS Role,
+            role.salary AS Salary,
+            manager.first_name AS Manager
+            FROM employee
+            LEFT JOIN manager
+            ON employee.manager_id = manager.id
+            LEFT JOIN role
+            ON employee.role_id = role.id
+            WHERE role.department_id = ${departmentId}`,
+            function(err, res) {
+                if (err) throw err;
+                // displaying the called info to a table
+                console.table(res);
+                // calling main menu function
+                mainMenu();
+            })
+          })
+    })
+}
+
 function addEmployee() {
     db.query("SELECT * FROM role UNION SELECT * FROM manager", (err,res) => {
         if (err) throw err;
@@ -471,6 +570,138 @@ function updateRole() {
     })
 }
 
+function removeEmployee() {
+    db.query(`SELECT * FROM employee`, (err, res) => {
+        if (err) throw err;
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: 'Which Employee would you like to remove?',
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].first_name);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            db.query(`DELETE FROM employee WHERE first_name = '${response.employee}'`,
+            (err, res) => {
+                if (err) throw err;
+                console.log(`
+                ==============================
+                Employee Removed Successfully!
+                ==============================
+                `);
+                mainMenu();
+            })
+          })
+    })
+}
+
+function removeDepartment() {
+    db.query(`SELECT * FROM department`, (err, res) => {
+        if (err) throw err;
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Which department would you like to remove?',
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].name);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            db.query(`DELETE FROM department WHERE name = '${response.department}'`,
+            (err, res) => {
+                if (err) throw err;
+                console.log(`
+                ================================
+                Department Removed Successfully!
+                ================================
+                `);
+                mainMenu();
+            })
+          })
+    })
+}
+
+function removeManager() {
+    db.query(`SELECT * FROM manager`, (err, res) => {
+        if (err) throw err;
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'manager',
+                message: 'Which manager would you like to remove?',
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].first_name);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            db.query(`DELETE FROM manager WHERE first_name = '${response.manager}'`,
+            (err, res) => {
+                if (err) throw err;
+                console.log(`
+                =============================
+                Manager Removed Successfully!
+                =============================
+                `);
+                mainMenu();
+            })
+          })
+    })
+}
+
+function removeRole() {
+    db.query(`SELECT * FROM role`, (err, res) => {
+        if (err) throw err;
+        return inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Which role would you like to remove?',
+                choices: function() {
+                    let choicesArr = [];
+                    for (var i = 0; i < res.length; i++) {
+                        choicesArr.push(res[i].title);
+                    }
+                    return choicesArr;
+                }
+            }
+        ])
+          .then(response => {
+            db.query(`DELETE FROM role WHERE title = '${response.role}'`,
+            (err, res) => {
+                if (err) throw err;
+                console.log(`
+                ==========================
+                Role Removed Successfully!
+                ==========================
+                `);
+                mainMenu();
+            })
+          })
+    })
+}
+
 // The main menu that you'll see in the app
 function mainMenu() {
     // connection to the sql database
@@ -498,6 +729,8 @@ function mainMenu() {
         message: 'What would you llike to do?',
         choices: [
             'View All Employees',
+            'View Employees By Manager',
+            'View Employees By Department',
             'Add Employee',
             'View Departments',
             'Add Department',
@@ -506,6 +739,10 @@ function mainMenu() {
             'View All Roles',
             'Add Role',
             'Update Employee Role',
+            'Remove Employee',
+            'Remove Department',
+            'Remove Manager',
+            'Remove Role',
             'Quit'
         ]
         }
@@ -514,6 +751,11 @@ function mainMenu() {
     .then(response => {
         if (response.menu === 'View All Employees') {
             viewEmployees();
+        }
+        else if (response.menu === 'View Employees By Manager') {
+            viewEmployeesByManager();
+        }else if (response.menu === 'View Employees By Department') {
+            viewEmployeesByDepartment();
         }
         else if (response.menu === 'Add Employee') {
             addEmployee();
@@ -536,8 +778,17 @@ function mainMenu() {
         else if (response.menu === 'Update Employee Role') {
             updateRole();
         }
-        else if (response.menu === 'Add Manager') {
-            addManager();
+        else if (response.menu === 'Remove Employee') {
+            removeEmployee();
+        }
+        else if (response.menu === 'Remove Department') {
+            removeDepartment();
+        }
+        else if (response.menu === 'Remove Manager') {
+            removeManager();
+        }
+        else if (response.menu === 'Remove Role') {
+            removeRole();
         }
         else if (response.menu === 'Quit') {
             console.log(`            
